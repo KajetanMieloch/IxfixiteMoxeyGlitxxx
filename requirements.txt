@@ -2,3 +2,5 @@ python-binance
 python-dotenv
 matplotlib
 pillow
+collections
+numpy

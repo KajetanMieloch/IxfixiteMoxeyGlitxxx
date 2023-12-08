@@ -9,6 +9,8 @@ import matplotlib.animation as animation
 from datetime import datetime, timedelta
 from matplotlib.animation import FuncAnimation
 import sys
+import collections
+import numpy as np
 
 load_dotenv()
 
@@ -21,22 +23,24 @@ klines = []
 
 def nextDay(startingDate):
     startingDate = datetime.strptime(startingDate, "%d %B, %Y, %H:%M:%S")
-    endingDate = startingDate + timedelta(days=1)
-    return endingDate.strftime("%d %B, %Y, %H:%M:%S")
+    endingLocalDate = startingDate + timedelta(days=1)
+    return endingLocalDate.strftime("%d %B, %Y, %H:%M:%S")
 
 def nextXHours(startingDate, hours):
     startingDate = datetime.strptime(startingDate, "%d %B, %Y, %H:%M:%S")
-    endingDate = startingDate + timedelta(hours=hours)
-    return endingDate.strftime("%d %B, %Y, %H:%M:%S")
+    endingLocalDate = startingDate + timedelta(hours=hours)
+    return endingLocalDate.strftime("%d %B, %Y, %H:%M:%S")
 
 def nextXMinutes(startingDate, minutes):
     startingDate = datetime.strptime(startingDate, "%d %B, %Y, %H:%M:%S")
-    endingDate = startingDate + timedelta(minutes=minutes)
-    return endingDate.strftime("%d %B, %Y, %H:%M:%S")
+    endingLocalDate = startingDate + timedelta(minutes=minutes)
+    return endingLocalDate.strftime("%d %B, %Y, %H:%M:%S")
 
 
 startingDate = "1 November, 2023, 00:00:00"
-endingDate = startingDate
+endingLocalDate = startingDate
+endingDate = "1 December, 2023, 00:00:00"
+
 
 #Input range (low and high)
 lowRange = 34150
@@ -56,15 +60,30 @@ def getKlines():
 # Define the plot function
 
 fig, ax = plt.subplots()
+getKlines()
+klinesInTimeRange = collections.deque(maxlen=96)
 
-def plot():
+def plot(klinesInTimeRange):
+    #Now i need to get the data in range from startingDate to endingDate from the klines and without connecting to the API
+    endingLocalDateTimestamp = datetime.strptime(endingLocalDate, "%d %B, %Y, %H:%M:%S").timestamp() * 1000
+    for kline in klines:
+        if endingLocalDateTimestamp <= kline[0] < endingLocalDateTimestamp + 60*60*1000:  # Check if the kline is within the next hour
+            klinesInTimeRange.append(kline)
+ 
+    # Pre-allocate memory for lists
+    timestamps = np.empty(len(klinesInTimeRange))
+    open_prices = np.empty(len(klinesInTimeRange))
+    high_prices = np.empty(len(klinesInTimeRange))
+    low_prices = np.empty(len(klinesInTimeRange))
+    close_prices = np.empty(len(klinesInTimeRange))
 
     # Extracting relevant data from the klines
-    timestamps = [kline[0] for kline in klines]
-    open_prices = [float(kline[1]) for kline in klines]
-    high_prices = [float(kline[2]) for kline in klines]
-    low_prices = [float(kline[3]) for kline in klines]
-    close_prices = [float(kline[4]) for kline in klines]
+    for i, kline in enumerate(klinesInTimeRange):
+        timestamps[i] = kline[0]
+        open_prices[i] = float(kline[1])
+        high_prices[i] = float(kline[2])
+        low_prices[i] = float(kline[3])
+        close_prices[i] = float(kline[4])
 
     # Convert timestamps to datetime objects for better x-axis formatting
     dates = [datetime.utcfromtimestamp(timestamp / 1000) for timestamp in timestamps]
@@ -75,7 +94,6 @@ def plot():
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M:%S'))
     ax.xaxis.set_major_locator(mdates.HourLocator())
 
-    candlestick_data = list(zip(dates, open_prices, close_prices, low_prices, high_prices))
     ax.plot(dates, open_prices, marker='o', linestyle='', color='green', label='Open')
     ax.plot(dates, close_prices, marker='o', linestyle='', color='red', label='Close')
     ax.vlines(dates, low_prices, high_prices, color='black', linewidth=2, label='Low/High')
@@ -89,13 +107,10 @@ def plot():
     plt.legend()
 
 def update(i):
-    global endingDate
-    endingDate = nextXHours(endingDate, 1)
-    getKlines()
-    plot()  # Plot the new data
-    print(endingDate)
-    if endingDate == "02 November, 2023, 00:00:00":
-        sys.exit()
+    global endingLocalDate
+    endingLocalDate = nextXHours(endingLocalDate, 1)
+    plot(klinesInTimeRange)  # Plot the new data
+    print(endingLocalDate)
 
 ani = animation.FuncAnimation(fig, update, interval=10, cache_frame_data=False)
 ani.save('BTCUSDT.gif', writer='pillow')
