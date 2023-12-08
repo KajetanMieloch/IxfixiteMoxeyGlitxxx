@@ -1,2 +1,3 @@
-pip install python-binance
-pip install python-dotenv
+python-binance
+python-dotenv
+matplotlib
