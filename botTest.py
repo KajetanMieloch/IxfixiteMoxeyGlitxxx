@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime
 from binance.enums import *
-import keyboard
 import matplotlib.animation as animation
 from datetime import datetime, timedelta
-
+from matplotlib.animation import FuncAnimation
+import sys
 
 load_dotenv()
 
@@ -94,9 +94,11 @@ def update(i):
     getKlines()
     plot()  # Plot the new data
     print(endingDate)
+    if endingDate == "02 November, 2023, 00:00:00":
+        sys.exit()
 
-ani = animation.FuncAnimation(fig, update, interval=100, cache_frame_data=False)
-plt.show()
+ani = animation.FuncAnimation(fig, update, interval=10, cache_frame_data=False)
+ani.save('BTCUSDT.gif', writer='pillow')
 
 
 # balance = client.get_asset_balance(asset='USDT')

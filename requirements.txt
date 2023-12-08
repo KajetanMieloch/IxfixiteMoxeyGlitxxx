@@ -1,4 +1,4 @@
 python-binance
 python-dotenv
 matplotlib
-keyboard
+pillow
