@@ -7,6 +7,8 @@ from datetime import datetime
 from binance.enums import *
 import keyboard
 import matplotlib.animation as animation
+from datetime import datetime, timedelta
+
 
 load_dotenv()
 
@@ -18,86 +20,19 @@ client = Client(api_key, api_secret, testnet=False)
 klines = []
 
 def nextDay(startingDate):
-    startingDate = startingDate.split(" ")
-    day = startingDate[0]
-    month = startingDate[1]
-    year = startingDate[2]
-    if day == "31" and month == "December":
-        day = "1"
-        month = "January"
-        year = str(int(year) + 1)
-    elif day == "31" and month == "January":
-        day = "1"
-        month = "February"
-    elif day == "28" and month == "February":
-        day = "1"
-        month = "March"
-    elif day == "31" and month == "March":
-        day = "1"
-        month = "April"
-    elif day == "30" and month == "April":
-        day = "1"
-        month = "May"
-    elif day == "31" and month == "May":
-        day = "1"
-        month = "June"
-    elif day == "30" and month == "June":
-        day = "1"
-        month = "July"
-    elif day == "31" and month == "July":
-        day = "1"
-        month = "August"
-    elif day == "31" and month == "August":
-        day = "1"
-        month = "September"
-    elif day == "30" and month == "September":
-        day = "1"
-        month = "October"
-    elif day == "31" and month == "October":
-        day = "1"
-        month = "November"
-    elif day == "30" and month == "November":
-        day = "1"
-        month = "December"
-    elif day == "29" and month == "February":
-        day = "1"
-        month = "March"
-    else:
-        day = str(int(day) + 1)
-    return day + " " + month + " " + year
+    startingDate = datetime.strptime(startingDate, "%d %B, %Y, %H:%M:%S")
+    endingDate = startingDate + timedelta(days=1)
+    return endingDate.strftime("%d %B, %Y, %H:%M:%S")
 
-#It should be a function that returns date in the format "day month, year, hour:minute:second" with added hours
 def nextXHours(startingDate, hours):
-    startingDate = startingDate.split(" ")
-    day = startingDate[0]
-    month = startingDate[1]
-    year = startingDate[2]
-    hour = startingDate[3]
-    minute = startingDate[4]
-    second = startingDate[5]
-    #Use nextDay function to get the next day
-    for i in range(hours):
-        if hour == "23":
-            hour = "00"
-            day = nextDay(day + " " + month + " " + year)
-        else:
-            hour = str(int(hour) + 1)
+    startingDate = datetime.strptime(startingDate, "%d %B, %Y, %H:%M:%S")
+    endingDate = startingDate + timedelta(hours=hours)
+    return endingDate.strftime("%d %B, %Y, %H:%M:%S")
 
-def nextXMinutes(minutes):
-    startingDate = startingDate.split(" ")
-    day = startingDate[0]
-    month = startingDate[1]
-    year = startingDate[2]
-    hour = startingDate[3]
-    minute = startingDate[4]
-    second = startingDate[5]
-    #Use nextDay function to get the next day
-    for i in range(minutes):
-        if minute == "59":
-            minute = "00"
-            hour = nextXHours(hour + " " + day + " " + month + " " + year)
-        else:
-            minute = str(int(minute) + 1)
+def nextXMinutes(startingDate, minutes):
+    startingDate = datetime.strptime(startingDate, "%d %B, %Y, %H:%M:%S")
+    endingDate = startingDate + timedelta(minutes=minutes)
+    return endingDate.strftime("%d %B, %Y, %H:%M:%S")
 
 
 startingDate = "1 November, 2023, 00:00:00"
@@ -155,11 +90,12 @@ def plot():
 
 def update(i):
     global endingDate
-    endingDate = nextDay(endingDate)
+    endingDate = nextXHours(endingDate, 1)
     getKlines()
     plot()  # Plot the new data
+    print(endingDate)
 
-ani = animation.FuncAnimation(fig, update, interval=500, cache_frame_data=False)
+ani = animation.FuncAnimation(fig, update, interval=100, cache_frame_data=False)
 plt.show()
 
 
