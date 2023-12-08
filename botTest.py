@@ -11,6 +11,7 @@ from matplotlib.animation import FuncAnimation
 import sys
 import collections
 import numpy as np
+import time
 
 load_dotenv()
 
@@ -37,14 +38,16 @@ def nextXMinutes(startingDate, minutes):
     return endingLocalDate.strftime("%d %B, %Y, %H:%M:%S")
 
 
-startingDate = "1 November, 2023, 00:00:00"
+startingDate = "5 November, 2023, 00:00:00"
 endingLocalDate = startingDate
-endingDate = "1 December, 2023, 00:00:00"
+endingDate = "11 December, 2023, 00:00:00"
 
 
 #Input range (low and high)
 lowRange = 34150
 highRange = 35950
+
+openPosition = False
 
 def getKlines():
     for kline in client.get_historical_klines_generator("BTCUSDT", Client.KLINE_INTERVAL_15MINUTE, startingDate, endingDate):
@@ -64,6 +67,7 @@ getKlines()
 klinesInTimeRange = collections.deque(maxlen=96)
 
 def plot(klinesInTimeRange):
+    global openPosition
     #Now i need to get the data in range from startingDate to endingDate from the klines and without connecting to the API
     endingLocalDateTimestamp = datetime.strptime(endingLocalDate, "%d %B, %Y, %H:%M:%S").timestamp() * 1000
     for kline in klines:
@@ -88,11 +92,20 @@ def plot(klinesInTimeRange):
     # Convert timestamps to datetime objects for better x-axis formatting
     dates = [datetime.utcfromtimestamp(timestamp / 1000) for timestamp in timestamps]
 
-
     ax.clear()
     ax.xaxis_date()
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M:%S'))
     ax.xaxis.set_major_locator(mdates.HourLocator())
+
+    if open_prices[-1] > highRange and openPosition == False:
+        openPosition = True
+        #On the plot, show the position as as big green dot with text "Long" and price of the position
+        ax.plot(dates[-1], open_prices[-1], marker='o', linestyle='', color='green', label='Open', markersize=12)
+        ax.text(dates[-1], open_prices[-1], "Long", fontsize=12, color='green')
+        print("Long")
+    elif open_prices[-1] < lowRange and openPosition == False:
+        openPosition = True
+        print("Short")
 
     ax.plot(dates, open_prices, marker='o', linestyle='', color='green', label='Open')
     ax.plot(dates, close_prices, marker='o', linestyle='', color='red', label='Close')
