@@ -66,7 +66,41 @@ def nextDay(startingDate):
         day = str(int(day) + 1)
     return day + " " + month + " " + year
 
-startingDate = "1 November, 2023"
+#It should be a function that returns date in the format "day month, year, hour:minute:second" with added hours
+def nextXHours(startingDate, hours):
+    startingDate = startingDate.split(" ")
+    day = startingDate[0]
+    month = startingDate[1]
+    year = startingDate[2]
+    hour = startingDate[3]
+    minute = startingDate[4]
+    second = startingDate[5]
+    #Use nextDay function to get the next day
+    for i in range(hours):
+        if hour == "23":
+            hour = "00"
+            day = nextDay(day + " " + month + " " + year)
+        else:
+            hour = str(int(hour) + 1)
+
+def nextXMinutes(minutes):
+    startingDate = startingDate.split(" ")
+    day = startingDate[0]
+    month = startingDate[1]
+    year = startingDate[2]
+    hour = startingDate[3]
+    minute = startingDate[4]
+    second = startingDate[5]
+    #Use nextDay function to get the next day
+    for i in range(minutes):
+        if minute == "59":
+            minute = "00"
+            hour = nextXHours(hour + " " + day + " " + month + " " + year)
+        else:
+            minute = str(int(minute) + 1)
+
+
+startingDate = "1 November, 2023, 00:00:00"
 endingDate = startingDate
 
 #Input range (low and high)
@@ -85,6 +119,9 @@ def getKlines():
 #Breakout strategy
 #If the price breaks the range, buy/sell
 # Define the plot function
+
+fig, ax = plt.subplots()
+
 def plot():
 
     # Extracting relevant data from the klines
@@ -98,7 +135,7 @@ def plot():
     dates = [datetime.utcfromtimestamp(timestamp / 1000) for timestamp in timestamps]
 
 
-    fig, ax = plt.subplots()
+    ax.clear()
     ax.xaxis_date()
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M:%S'))
     ax.xaxis.set_major_locator(mdates.HourLocator())
@@ -115,17 +152,14 @@ def plot():
     plt.xlabel('Time')
     plt.ylabel('Price')
     plt.legend()
-    plt.show()
 
 def update(i):
     global endingDate
     endingDate = nextDay(endingDate)
     getKlines()
-    ax.clear()  # Clear the current plot
     plot()  # Plot the new data
 
-fig, ax = plt.subplots()
-ani = animation.FuncAnimation(fig, update, interval=1000, cache_frame_data=False)
+ani = animation.FuncAnimation(fig, update, interval=500, cache_frame_data=False)
 plt.show()
 
 
