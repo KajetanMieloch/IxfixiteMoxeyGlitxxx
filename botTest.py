@@ -40,7 +40,7 @@ def nextXMinutes(startingDate, minutes):
 
 startingDate = "5 November, 2023, 00:00:00"
 endingLocalDate = startingDate
-endingDate = "11 December, 2023, 00:00:00"
+endingDate = "11 November, 2023, 00:00:00"
 
 
 #Input range (low and high)
@@ -124,6 +124,9 @@ def update(i):
     endingLocalDate = nextXHours(endingLocalDate, 1)
     plot(klinesInTimeRange)  # Plot the new data
     print(endingLocalDate)
+    if endingLocalDate == endingDate:
+        sys.exit()
+        quit()
 
 ani = animation.FuncAnimation(fig, update, interval=10, cache_frame_data=False)
 ani.save('BTCUSDT.gif', writer='pillow')
