@@ -149,3 +149,37 @@ ani.save('BTCUSDT.gif', writer='pillow')
 # print("BTC after: ", balance)
 
 ######## ANALYSIS OF THE DATA ########
+
+
+######## JAK TO MA DZIAŁAĆ ########
+#On widzi 24h
+#Szukamy największej świeczki w 24h (Najwyższa high) - swing high
+#Szukamy najniższej świeczki 2-3 ew. 5-6 (zobaczymy w testach) do tyłu (Najniższa low) - swing low
+#Czeka na następną świeczkę
+#Jeśli następna świeczka zamyka się wyżej to idź do B
+#Jeśli następna świeczka nie przebije swing high ani swing low to idź do A
+
+#A:
+#Wyznacz initial range - max i min z swing high i swing low
+#Jeśli cena przebije swing high to #D
+#Czekaj na świeczkę która przejdzie 75% swing low w dół
+#Jeśli świeczka przebije przejdzie 75% swing low w dół to mamy range.
+#Range = Swing high (range high) - 75% swing low (range low)
+#Jeśli cena przebije range high I SIĘ ZAMKNIĘCIE NAD NIM to #B
+#Jeśli cena przebije range low I SIĘ ZAMKNIĘCIE POD NIM to #C
+
+#B:
+#Kupuj
+#Stop loss ustaw na poziomie low swinga poprzedniej czerwonej świeczki
+#Take profit ustaw na poziomie 3R
+
+#C:
+#Sprzedaj
+#Stop loss ustaw na poziomie high swinga poprzedniej zielonej świeczki
+#Take profit ustaw na poziomie 3R
+
+#D:
+#Jeśli tu jesteś to znaczy że cena przebiła swing high
+#Nowym swing high jest cena zamknięcia świeczki
+#Nowym swing low jest cena następnej świeczki która miała najniższy low (poniżej poprzedniego swing high)
+#Wróć do A
